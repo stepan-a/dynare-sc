@@ -1,0 +1,4 @@
+ServerName: my.machine.org
+UserEmail: toto@machine.org
+UserLogin: toto
+UserPassword: mypassword
