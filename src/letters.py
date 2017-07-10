@@ -124,5 +124,5 @@ UserLogin = config['UserLogin']
 UserPassword = config['UserPassword']
 
 
-sendallattendancemails('db/list.csv')
+# sendallattendancemails('db/list.csv')
 # writeletters('db/student-list-2017.csv', 'attendance')
