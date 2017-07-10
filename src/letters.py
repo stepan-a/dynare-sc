@@ -7,6 +7,7 @@ from email import encoders
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 from email.mime.base import MIMEBase
+from email.utils import formatdate
 import yaml
 
 def printstudentlist(database):
@@ -77,6 +78,7 @@ def sendattendancemail(student, FromEmail, ServerName, UserLogin, UserPassword):
     msg['From'] = FromEmail
     msg['To'] = student["EMAIL"]
     msg['Subject'] = "Dynare Summer School"
+    msg['Date'] = formatdate(localtime=True)
     body =  attendancemessage(student)
     msg.attach(MIMEText(body, 'plain','utf-8'))
     filename = setfilename(setbasefilename(student, 'attendance'), 'pdf')
