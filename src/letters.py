@@ -18,7 +18,7 @@ def printstudentlist(database):
 
 def lastname(student):
     return student["LASTNAME"].replace(' ', '-')
-            
+
 def setbasefilename(student, type):
     return lastname(student)+'-'+type
 
@@ -48,7 +48,7 @@ def writeletters(database, type):
             student["FIRSTNAME"] = row[0]
             student["LASTNAME"] = row[1]
             student["EMAIL"] = row[2]
-            renderer_template = template.render(**student)            
+            renderer_template = template.render(**student)
             basefilename = setbasefilename(student, type)
             with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
                 f.write(renderer_template)
@@ -62,12 +62,27 @@ def attendancemessage(student):
     msg = """Dear %s,
 
 Please find enclosed an attendance certificate in case you need it.
-    
+
 I hope you enjoyed your stay in Paris and the summer school.
 
 Best,
 Stéphane.
-    
+
+--
+Stéphane Adjemian
+In charge of the Dynare project""" % (student["FIRSTNAME"])
+    return msg
+
+def acceptancemessage(student):
+    msg = """Dear %s,
+
+I am pleased to inform you that you have been accepted in the next Dynare Summer School. A formal invitation is enclosed to this email (with the dates, location and the fee that will be charged to you). We will contact you very soon to inform you of the week's agenda and for payment formalities.
+
+I hope you will enjoy your stay in Paris and the summer school.
+
+Best,
+Stéphane.
+
 --
 Stéphane Adjemian
 In charge of the Dynare project""" % (student["FIRSTNAME"])
@@ -106,7 +121,7 @@ def sendallattendancemails(database):
             student["FIRSTNAME"] = row[0]
             student["LASTNAME"] = row[1]
             student["EMAIL"] = row[2]
-            renderer_template = template.render(**student)            
+            renderer_template = template.render(**student)
             basefilename = setbasefilename(student, type)
             with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
                 f.write(renderer_template)
