@@ -92,7 +92,7 @@ def sendattendancemail(student, FromEmail, ServerName, UserLogin, UserPassword):
     msg = MIMEMultipart()
     msg['From'] = FromEmail
     msg['To'] = student["EMAIL"]
-    msg['Cc'] = 'summerschool@dynare.org'
+    msg['Cc'] = 'school@dynare.org'
     msg['Subject'] = "Dynare Summer School"
     msg['Date'] = formatdate(localtime=True)
     body =  attendancemessage(student)
@@ -108,7 +108,7 @@ def sendattendancemail(student, FromEmail, ServerName, UserLogin, UserPassword):
     server.starttls()
     server.login(UserLogin, UserPassword)
     text = msg.as_string()
-    server.sendmail(FromEmail, [student["EMAIL"], ' summerschool@dynare.org'], text)
+    server.sendmail(FromEmail, [student["EMAIL"], ' school@dynare.org'], text)
     server.quit()
 
 def sendallattendancemails(database):
