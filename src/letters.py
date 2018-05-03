@@ -47,7 +47,7 @@ def writeletters(database, type):
             student = {}
             student["FIRSTNAME"] = row[0]
             student["LASTNAME"] = row[1]
-            student["EMAIL"] = row[3]
+            student["EMAIL"] = row[2]
             renderer_template = template.render(**student)            
             basefilename = setbasefilename(student, type)
             with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
@@ -105,7 +105,7 @@ def sendallattendancemails(database):
             student = {}
             student["FIRSTNAME"] = row[0]
             student["LASTNAME"] = row[1]
-            student["EMAIL"] = row[3]
+            student["EMAIL"] = row[2]
             renderer_template = template.render(**student)            
             basefilename = setbasefilename(student, type)
             with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
