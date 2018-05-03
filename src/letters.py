@@ -39,9 +39,14 @@ latex_jinja_env = jinja2.Environment(
     autoescape = False,
     loader = jinja2.FileSystemLoader(os.path.abspath('/')))
 
-def writeletters(database, type):
-    template = latex_jinja_env.get_template(os.path.realpath('templates/'+type+'-letter.tex'))
-    with open(database, newline='') as csvfile:
+def writeletters(database, t1, *t2):
+    # Select template.
+    if not t2:
+        template = latex_jinja_env.get_template(os.path.realpath('templates/'+t1+'-letter.tex'))
+    else:
+        template = latex_jinja_env.get_template(os.path.realpath('templates/'+t1+'-'+t2[0]+'-letter.tex'))
+    # Write letter (pdf)
+    with open(database, newline='', encoding='utf-8') as csvfile:
         tmp = csv.reader(csvfile, delimiter=';', quotechar='"')
         for row in tmp:
             student = {}
@@ -49,7 +54,7 @@ def writeletters(database, type):
             student["LASTNAME"] = row[1]
             student["EMAIL"] = row[2]
             renderer_template = template.render(**student)
-            basefilename = setbasefilename(student, type)
+            basefilename = setbasefilename(student, t1)
             with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
                 f.write(renderer_template)
             os.chdir('./build')
@@ -58,7 +63,7 @@ def writeletters(database, type):
                 os.remove(setfilename(basefilename, ext))
             os.chdir('../')
 
-def attendancemessage(student):
+def attendance(student):
     msg = """Dear %s,
 
 Please find enclosed an attendance certificate in case you need it.
@@ -73,7 +78,7 @@ Stéphane Adjemian
 In charge of the Dynare project""" % (student["FIRSTNAME"])
     return msg
 
-def acceptancemessage(student):
+def acceptance(student):
     msg = """Dear %s,
 
 I am pleased to inform you that you have been accepted in the next Dynare Summer School. A formal invitation is enclosed to this email (with the dates, location and the fee that will be charged to you). We will contact you very soon to inform you of the week's agenda and for payment formalities.
@@ -88,22 +93,40 @@ Stéphane Adjemian
 In charge of the Dynare project""" % (student["FIRSTNAME"])
     return msg
 
-def sendattendancemail(student, FromEmail, ServerName, UserLogin, UserPassword):
+def reject(student):
+    msg = """Dear %s,
+
+I am sorry to inform you that your application has not been accepted.
+Due to the limited number of places we had to reject potentially
+interesting applications (around 25 percent).
+
+We wish you all the best for your research.
+
+On behalf of the Dynare team,
+Stéphane Adjemian
+
+--
+Stéphane Adjemian
+In charge of the Dynare project""" % (student["FIRSTNAME"])
+    return msg
+
+
+def sendemail(student, message, enclosedfile, FromEmail, ServerName, UserLogin, UserPassword):
     msg = MIMEMultipart()
     msg['From'] = FromEmail
     msg['To'] = student["EMAIL"]
     msg['Cc'] = 'school@dynare.org'
     msg['Subject'] = "Dynare Summer School"
     msg['Date'] = formatdate(localtime=True)
-    body =  attendancemessage(student)
+    body =  message(student)
     msg.attach(MIMEText(body, 'plain','utf-8'))
-    filename = setfilename(setbasefilename(student, 'attendance'), 'pdf')
-    attachment = open("build/"+filename, "rb")
-    part = MIMEBase('application', 'octet-stream')
-    part.set_payload((attachment).read())
-    encoders.encode_base64(part)
-    part.add_header('Content-Disposition', "attachment; filename= %s" % filename)
-    msg.attach(part)
+    if enclosedfile!='':
+        attachment = open("build/"+enclosedfile, "rb")
+        part = MIMEBase('application', 'octet-stream')
+        part.set_payload((attachment).read())
+        encoders.encode_base64(part)
+        part.add_header('Content-Disposition', "attachment; filename= %s" % enclosedfile)
+        msg.attach(part)
     server = smtplib.SMTP(ServerName, 587)
     server.starttls()
     server.login(UserLogin, UserPassword)
@@ -111,26 +134,34 @@ def sendattendancemail(student, FromEmail, ServerName, UserLogin, UserPassword):
     server.sendmail(FromEmail, [student["EMAIL"], ' school@dynare.org'], text)
     server.quit()
 
-def sendallattendancemails(database):
-    type='attendance'
-    template = latex_jinja_env.get_template(os.path.realpath('templates/'+type+'-letter.tex'))
-    with open(database, newline='') as csvfile:
+def sendallemails(database, t1, *t2):
+    # Select template if needed
+    if t1!='reject':
+        if not t2:
+            template = latex_jinja_env.get_template(os.path.realpath('templates/'+t1+'-letter.tex'))
+        else:
+            template = latex_jinja_env.get_template(os.path.realpath('templates/'+t1+'-'+t2[0]+'-letter.tex'))
+    # Read database line by line, write and send emails
+    with open(database, newline='', encoding='utf-8') as csvfile:
         tmp = csv.reader(csvfile, delimiter=';', quotechar='"')
         for row in tmp:
             student = {}
             student["FIRSTNAME"] = row[0]
             student["LASTNAME"] = row[1]
             student["EMAIL"] = row[2]
-            renderer_template = template.render(**student)
-            basefilename = setbasefilename(student, type)
-            with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
-                f.write(renderer_template)
-            os.chdir('./build')
-            os.system('pdflatex ' + basefilename)
-            for ext in ['tex', 'aux', 'log', 'out']:
-                os.remove(setfilename(basefilename, ext))
-            os.chdir('../')
-            sendattendancemail(student, UserEmail, ServerName, UserLogin, UserPassword)
+            if t1!='reject':
+                renderer_template = template.render(**student)
+                basefilename = setbasefilename(student, t1)
+                with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
+                    f.write(renderer_template)
+                os.chdir('./build')
+                os.system('pdflatex ' + basefilename)
+                for ext in ['tex', 'aux', 'log', 'out']:
+                    os.remove(setfilename(basefilename, ext))
+                os.chdir('../')
+                sendemail(student, eval(t1), setfilename(basefilename, 'pdf'), UserEmail, ServerName, UserLogin, UserPassword)
+            else:
+                sendemail(student, eval(t1), '', UserEmail, ServerName, UserLogin, UserPassword)
 
 # Read configuration file
 with open("configuration.yml", 'r') as ymlfile:
@@ -140,7 +171,3 @@ ServerName = config['ServerName']
 UserEmail = config['UserEmail']
 UserLogin = config['UserLogin']
 UserPassword = config['UserPassword']
-
-
-# sendallattendancemails('db/list.csv')
-# writeletters('db/student-list-2017.csv', 'attendance')
