@@ -2,3 +2,4 @@
 .DS_Store
 src/__pycache__/*
 configuration.yml
+oldies/*
