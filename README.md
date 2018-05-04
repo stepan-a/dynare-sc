@@ -2,6 +2,6 @@ This repository contains a set of scripts for the administration of the Dynare S
 
 ```python
 >>> from src import letters
->>> letters.sendallattendancemails('db/list.csv')
+>>> letters.sendallemails('db/list.csv', 'attendance')
 ```
-where `db/list.csv` is a csv file containing a list of participants (on each row we have the first name, the last name, the institution and the email).
+where `db/list.csv` is a csv file containing a list of participants (on each row we have the firstname, the lastname, and the email).
