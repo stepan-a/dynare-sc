@@ -93,6 +93,46 @@ Stéphane Adjemian
 In charge of the Dynare project""" % (student["FIRSTNAME"])
     return msg
 
+
+def paypal_academic(student):
+    msg = """Dear %s,
+
+You have been accepted in the the next Dynare Summer School and you are elligible to the academic price (200€). Your inscription to the program will be definitive when we will receive confirmation of your payment. You can proceed to the payment through our paypal account, here:
+
+http://www.dynare.org/summerschool/MjRmZjdhM2YyY2NlOGEwZDQ2Y2E3MGVm/registration/
+
+Please do the payment as soon as possible, this will help us in organizing the week. If you finally decide to cancel your participation, please let us know.
+
+I hope you will enjoy your stay in Paris and the summer school.
+
+Best,
+Stéphane.
+
+--
+Stéphane Adjemian
+In charge of the Dynare project""" % (student["FIRSTNAME"])
+    return msg
+
+def paypal_institution(student):
+    msg = """Dear %s,
+
+You have been accepted in the the next Dynare Summer School and you are elligible to the institution price (1500€). Your inscription to the program will be definitive when we will receive confirmation of your payment. You can proceed to the payment through our paypal account, here:
+
+http://www.dynare.org/summerschool/YTAyODMwNGU5NTFiZWMzMmEwZmQ3M2Mz/registration/
+
+Please do the payment as soon as possible, this will help us in organizing the week. If you finally decide to cancel your participation, please let us know.
+
+I hope you will enjoy your stay in Paris and the summer school.
+
+Best,
+Stéphane.
+
+--
+Stéphane Adjemian
+In charge of the Dynare project""" % (student["FIRSTNAME"])
+    return msg
+
+
 def reject(student):
     msg = """Dear %s,
 
@@ -136,7 +176,7 @@ def sendemail(student, message, enclosedfile, FromEmail, ServerName, UserLogin, 
 
 def sendallemails(database, t1, *t2):
     # Select template if needed
-    if t1!='reject':
+    if t1!='reject' and t1!='paypal_academic' and t1!='paypal_institution':
         if not t2:
             template = latex_jinja_env.get_template(os.path.realpath('templates/'+t1+'-letter.tex'))
         else:
@@ -149,7 +189,7 @@ def sendallemails(database, t1, *t2):
             student["FIRSTNAME"] = row[0]
             student["LASTNAME"] = row[1]
             student["EMAIL"] = row[2]
-            if t1!='reject':
+            if t1!='reject' and t1!='paypal_academic' and t1!='paypal_institution':
                 renderer_template = template.render(**student)
                 basefilename = setbasefilename(student, t1)
                 with open('build/'+setfilename(basefilename, 'tex'), "w") as f:
